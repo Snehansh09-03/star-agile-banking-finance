@@ -1,7 +1,7 @@
 resource "aws_instance" "test-server" {
   ami = "ami-0bc691261a82b32bc"
   instance_type = "t2.micro"
-  key_name = "ubuntu"
+  key_name = "Staragile"
   vpc_security_group_ids = ["sg-0c7b73297c52807d3"]
   connection {
      type = "ssh"
