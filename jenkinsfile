@@ -1,0 +1,53 @@
+pipeline {
+    agent any
+
+    
+
+    stages {
+        stage('Build') {
+            steps {
+                // Get some code from a GitHub repository
+                git 'https://github.com/Snehansh09-03/star-agile-banking-finance.git'
+
+                // Run Maven on a Unix agent.
+                sh "mvn -Dmaven.test.failure.ignore=true clean package"
+
+            }        
+        }
+       stage('codetesting '){
+            steps{
+                sh 'mvn test'
+            }
+        }
+       stage('Create Docker Image') {
+           steps {
+               sh 'docker build -t shivansh8068/banking_staragile:1.0 .'
+                    }
+                }
+       stage('Docker-Login') {
+           steps {
+              withCredentials([usernamePassword(credentialsId: 'dockerhub-pwd', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                    sh "echo $PASS | docker login -u $USER --password-stdin"
+                                   }
+                        }
+                }
+       stage('Push-Image') {
+           steps {
+               sh 'docker push shivansh8068/banking_staragile:1.0'
+                     }
+                }
+       stage('Config & Deployment') {
+            steps {
+                
+                withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'AWS-ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    dir('terraform-files') {
+                    sh 'sudo chmod 600 Staragile.pem'
+                    sh 'terraform init'
+                    sh 'terraform validate'
+                    sh 'terraform apply --auto-approve'
+}
+    }
+}
+}
+}
+}
